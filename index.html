@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MrBeast vs Ronaldo</title>
+    <style>
+        /* General Styling */
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #181818;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        h1, h2, h3, h4 {
+            color: #fff;
+        }
+
+        /* Header */
+        header {
+            background-color: #202020;
+            padding: 15px 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Main Container */
+        .container {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px auto;
+            width: 80%;
+        }
+
+        iframe {
+            border: none;
+            border-radius: 10px;
+        }
+
+        /* Voting Section */
+        .vote-section {
+            margin: 20px 0;
+        }
+
+        button {
+            background-color: #cc0000;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 10px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #ff0000;
+        }
+
+        /* VS Section */
+        .vs-section {
+            font-size: 40px;
+            font-weight: bold;
+            color: #ff0000;
+            margin: 20px 0;
+        }
+
+        /* Results Section */
+        .results {
+            margin-top: 30px;
+        }
+
+        #countriesList {
+            list-style: none;
+            padding: 0;
+        }
+
+        #countriesList li {
+            margin: 5px 0;
+            font-size: 16px;
+        }
+
+        /* Loading Animation */
+        .loading-bar {
+            height: 5px;
+            background: #cc0000;
+            width: 0;
+            margin: 20px auto;
+            transition: width 0.5s ease;
+        }
+
+        /* Emojis */
+        .emoji {
+            font-size: 30px;
+            margin: 0 10px;
+        }
+
+        /* Online Users Section */
+        .online-users {
+            margin-top: 20px;
+        }
+
+        .online-users ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .online-users li {
+            margin: 5px 0;
+            font-size: 16px;
+        }
+
+        /* Modal Popup */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+        .modal-content {
+            background-color: #333;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 400px;
+            border-radius: 10px;
+            text-align: left;
+        }
+
+        .modal-header {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .modal input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .modal button {
+            width: 100%;
+            padding: 10px;
+            background-color: #cc0000;
+            border: none;
+            color: white;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .modal button:hover {
+            background-color: #ff0000;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1><span class="emoji">🔥</span> MrBeast vs Ronaldo: Who is Better? <span class="emoji">⚽</span></h1>
+    </header>
+
+    <div class="container">
+        <div>
+            <h2>MrBeast</h2>
+            <iframe src="https://socialcounts.org/youtube-live-subscriber-count/UCX6OQ3DkcsbYNE6H8uQQuVA/embed" width="300" height="150"></iframe>
+        </div>
+        <div class="vs-section">VS</div>
+        <div>
+            <h2>Cristiano Ronaldo</h2>
+            <iframe src="https://socialcounts.org/youtube-live-subscriber-count/UCtxD0x6AuNNqdXO9Wp5GHew/embed" width="300" height="150"></iframe>
+        </div>
+    </div>
+
+    <div class="vote-section">
+        <h3>Vote for the Best!</h3>
+        <button onclick="vote('MrBeast')">Vote MrBeast</button>
+        <button onclick="vote('Ronaldo')">Vote Ronaldo</button>
+        <div id="loading" class="loading-bar"></div>
+        <p id="voteStatus"></p>
+    </div>
+
+    <div class="results">
+        <h3>Results</h3>
+        <p id="mrbeastVotes">MrBeast: 0 votes</p>
+        <p id="ronaldoVotes">Ronaldo: 0 votes</p>
+        <h4>Countries Voted:</h4>
+        <ul id="countriesList"></ul>
+    </div>
+
+    <div class="online-users">
+        <h3>Online Users</h3>
+        <ul id="onlineUsersList"></ul>
+    </div>
+
+    <!-- Modal for name input -->
+    <div id="nameModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">Welcome! Please enter your name:</div>
+            <input type="text" id="userNameInput" placeholder="Enter your name here">
+            <button onclick="saveUserName()">Submit</button>
+        </div>
+    </div>
+
+    <script>
+        // Initialize vote data and online users from localStorage
+        const storage = localStorage;
+
+        const voteData = {
+            MrBeast: parseInt(storage.getItem('MrBeastVotes') || '0'),
+            Ronaldo: parseInt(storage.getItem('RonaldoVotes') || '0'),
+            countries: JSON.parse(storage.getItem('countries') || '{}')
+        };
+
+        let onlineUsers = JSON.parse(storage.getItem('onlineUsers') || '[]');
+
+        // Show modal for user name entry
+        function showNameModal() {
+            document.getElementById('nameModal').style.display = 'block';
+        }
+
+        // Save user name and update online users list
+        function saveUserName() {
+            const userNameInput = document.getElementById('userNameInput').value.trim();
+            if (userNameInput) {
+                storage.setItem('userName', userNameInput);
+                addUserToOnlineList(userNameInput);
+                document.getElementById('nameModal').style.display = 'none';
+            }
+        }
+
+        // Prompt for name if not already set
+        function promptForName() {
+            const userName = storage.getItem('userName');
+            if (!userName) {
+                showNameModal();
+            } else {
+                addUserToOnlineList(userName);
+            }
+        }
+
+        // Add user to online users list
+        function addUserToOnlineList(userName) {
+            if (!onlineUsers.includes(userName)) {
+                onlineUsers.push(userName);
+                updateOnlineUsers();
+                storage.setItem('onlineUsers', JSON.stringify(onlineUsers));
+            }
+        }
+
+        // Update online users list in UI
+        function updateOnlineUsers() {
+            const onlineUsersList = document.getElementById('onlineUsersList');
+            onlineUsersList.innerHTML = '';
+            onlineUsers.forEach(user => {
+                onlineUsersList.innerHTML += `<li>${user}</li>`;
+            });
+        }
+
+        // Get user country based on IP
+        async function getUserCountry() {
+            const response = await fetch('https://ipapi.co/json/');
+            const data = await response.json();
+            return data.country_name;
+        }
+
+        // Update results in UI
+        function updateResults() {
+            document.getElementById('mrbeastVotes').textContent = `MrBeast: ${voteData.MrBeast} votes`;
+            document.getElementById('ronaldoVotes').textContent = `Ronaldo: ${voteData.Ronaldo} votes`;
+
+            const countriesList = document.getElementById('countriesList');
+            countriesList.innerHTML = '';
+            for (const country in voteData.countries) {
+                countriesList.innerHTML += `<li>${country}: ${voteData.countries[country]} votes</li>`;
+            }
+        }
+
+        // Handle voting
+        async function vote(option) {
+            const userCountry = await getUserCountry();
+            const userVoted = storage.getItem('userVoted');
+
+            if (userVoted) {
+                document.getElementById('voteStatus').textContent = 'You have already voted!';
+                return;
+            }
+
+            // Animate loading bar
+            const loadingBar = document.getElementById('loading');
+            loadingBar.style.width = '0';
+            loadingBar.style.width = '100%';
+
+            setTimeout(() => {
+                if (option === 'MrBeast') {
+                    voteData.MrBeast++;
+                } else if (option === 'Ronaldo') {
+                    voteData.Ronaldo++;
+                }
+
+                if (!voteData.countries[userCountry]) {
+                    voteData.countries[userCountry] = 1;
+                } else {
+                    voteData.countries[userCountry]++;
+                }
+
+                storage.setItem('MrBeastVotes', voteData.MrBeast);
+                storage.setItem('RonaldoVotes', voteData.Ronaldo);
+                storage.setItem('countries', JSON.stringify(voteData.countries));
+                storage.setItem('userVoted', 'true');
+                updateResults();
+                document.getElementById('voteStatus').textContent = 'Thank you for voting!';
+            }, 500);  // Simulate loading time
+        }
+
+        // Synchronize localStorage changes across tabs
+        window.addEventListener('storage', () => {
+            if (storage.getItem('onlineUsers')) {
+                onlineUsers = JSON.parse(storage.getItem('onlineUsers'));
+                updateOnlineUsers();
+            }
+            if (storage.getItem('MrBeastVotes') || storage.getItem('RonaldoVotes')) {
+                voteData.MrBeast = parseInt(storage.getItem('MrBeastVotes') || '0');
+                voteData.Ronaldo = parseInt(storage.getItem('RonaldoVotes') || '0');
+                voteData.countries = JSON.parse(storage.getItem('countries') || '{}');
+                updateResults();
+            }
+        });
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', () => {
+            updateResults();
+            updateOnlineUsers();
+            promptForName();
+        });
+    </script>
+</body>
+</html>
